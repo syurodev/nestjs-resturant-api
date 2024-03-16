@@ -27,7 +27,9 @@ let EmployeeService = class EmployeeService {
         this.jwtService = jwtService;
     }
     async findOne(id) {
-        let existingEmployee = await this.employeeRepository.query(`CALL phamtuanvu.sp_g_employee(${id});`);
+        let existingEmployee = await this.employeeRepository.query("CALL phamtuanvu.sp_g_employee(?);", [
+            id,
+        ]);
         return existingEmployee[0][0];
     }
     async findAll() {
@@ -63,6 +65,10 @@ let EmployeeService = class EmployeeService {
             employee.phone_number,
             employee.gender,
         ]);
+        return updatedEmployee[0][0];
+    }
+    async updateStatus(employeeId, newStatus) {
+        let updatedEmployee = await this.employeeRepository.query("CALL phamtuanvu.sp_u_employee_status(?, ?, @c, @m);", [employeeId, newStatus]);
         return updatedEmployee[0][0];
     }
 };

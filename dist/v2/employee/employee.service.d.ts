@@ -12,4 +12,5 @@ export declare class EmployeeService {
     findOneByUsername(username: string): Promise<Employee>;
     create(employeeDTO: EmployeeDTO): Promise<Employee>;
     update(employee: Employee): Promise<Employee>;
+    updateStatus(employeeId: number, newStatus: number): Promise<Employee>;
 }

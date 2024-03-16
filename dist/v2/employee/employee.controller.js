@@ -25,6 +25,7 @@ const utils_swagger_response_1 = require("../../utils.common/utils.swagger.commo
 const utils_decorators_common_1 = require("../../utils.common/utils.decorators.common/utils.decorators.common");
 const employee_detail_response_1 = require("./employee.response/employee-detail.response");
 const employee_update_dto_1 = require("./employee.dto/employee-update.dto");
+const employee_update_status_1 = require("./employee.dto/employee-update-status");
 let EmployeeController = class EmployeeController {
     constructor(employeeService) {
         this.employeeService = employeeService;
@@ -59,6 +60,25 @@ let EmployeeController = class EmployeeController {
         }
         response.setData(new employee_detail_response_1.EmployeeDetailResponse(updatedEmployee));
         return res.status(common_1.HttpStatus.OK).send(response);
+    }
+    async updateStatus(employeeUpdateStatusDTO, res, employee, id) {
+        let response = new utils_response_common_1.ResponseData();
+        if (+employee.id !== +id) {
+            throw new common_1.HttpException(new utils_exception_common_1.ExceptionResponseDetail(common_1.HttpStatus.BAD_REQUEST, `Bạn không có quyền thay đổi trạng thái nhân viên này!`), common_1.HttpStatus.OK);
+        }
+        let existingEmployee = await this.employeeService.findOne(employee.id);
+        if (!existingEmployee) {
+            throw new common_1.HttpException(new utils_exception_common_1.ExceptionResponseDetail(common_1.HttpStatus.BAD_REQUEST, `Không tìm thấy nhân viên!`), common_1.HttpStatus.OK);
+        }
+        let updatedEmployee = await this.employeeService.updateStatus(employee.id, employeeUpdateStatusDTO.status);
+        if (updatedEmployee) {
+            response.setData(updatedEmployee);
+            return res.status(common_1.HttpStatus.OK).send(response);
+        }
+        else {
+            response.setMessage(400, "Chỉnh sửa thất bại");
+            return res.status(common_1.HttpStatus.BAD_REQUEST).send(response);
+        }
     }
 };
 __decorate([
@@ -139,6 +159,34 @@ __decorate([
     __metadata("design:paramtypes", [employee_update_dto_1.EmployeeUpdateDTO, Object, employee_entity_1.Employee]),
     __metadata("design:returntype", Promise)
 ], EmployeeController.prototype, "updateEmployee", null);
+__decorate([
+    (0, common_1.Post)("/:id/update-status"),
+    (0, common_1.UseGuards)(common_1.ValidationPipe),
+    (0, common_1.UsePipes)(),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOkResponse)({
+        schema: {
+            allOf: [
+                { $ref: (0, swagger_1.getSchemaPath)(utils_swagger_response_1.SwaggerResponse) },
+                {
+                    properties: {
+                        data: {
+                            $ref: (0, swagger_1.getSchemaPath)("EmployeeResponse"),
+                        },
+                    },
+                },
+            ],
+        },
+    }),
+    (0, swagger_1.ApiOperation)({ summary: "Đổi trạng thái nhân viên" }),
+    __param(0, (0, common_1.Body)(new common_1.ValidationPipe())),
+    __param(1, (0, common_1.Res)()),
+    __param(2, (0, utils_decorators_common_1.GetUserFromToken)()),
+    __param(3, (0, common_1.Param)("id")),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [employee_update_status_1.EmployeeUpdateStatusDTO, Object, employee_entity_1.Employee, Number]),
+    __metadata("design:returntype", Promise)
+], EmployeeController.prototype, "updateStatus", null);
 EmployeeController = __decorate([
     (0, common_1.Controller)({
         version: utils_version_enum_1.VersionEnum.V2.toString(),

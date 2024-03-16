@@ -25,9 +25,9 @@ export class EmployeeService {
    */
   async findOne(id: number): Promise<Employee> {
     let existingEmployee: [ResultSetHeader, [Employee]] =
-      await this.employeeRepository.query(
-        `CALL phamtuanvu.sp_g_employee(${id});`
-      );
+      await this.employeeRepository.query("CALL phamtuanvu.sp_g_employee(?);", [
+        id,
+      ]);
 
     return existingEmployee[0][0];
   }
@@ -95,6 +95,16 @@ export class EmployeeService {
           employee.phone_number,
           employee.gender,
         ]
+      );
+
+    return updatedEmployee[0][0];
+  }
+
+  async updateStatus(employeeId: number, newStatus: number): Promise<Employee> {
+    let updatedEmployee: [ResultSetHeader, [Employee]] =
+      await this.employeeRepository.query(
+        "CALL phamtuanvu.sp_u_employee_status(?, ?, @c, @m);",
+        [employeeId, newStatus]
       );
 
     return updatedEmployee[0][0];

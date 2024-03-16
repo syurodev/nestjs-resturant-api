@@ -29,6 +29,7 @@ import { SwaggerResponse } from "src/utils.common/utils.swagger.common/utils.swa
 import { GetUserFromToken } from "src/utils.common/utils.decorators.common/utils.decorators.common";
 import { EmployeeDetailResponse } from "./employee.response/employee-detail.response";
 import { EmployeeUpdateDTO } from "./employee.dto/employee-update.dto";
+import { EmployeeUpdateStatusDTO } from "./employee.dto/employee-update-status";
 
 @Controller({
   version: VersionEnum.V2.toString(),
@@ -168,5 +169,71 @@ export class EmployeeController {
 
     response.setData(new EmployeeDetailResponse(updatedEmployee));
     return res.status(HttpStatus.OK).send(response);
+  }
+
+  @Post("/:id/update-status")
+  @UseGuards(ValidationPipe)
+  @UsePipes()
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(SwaggerResponse) },
+        {
+          properties: {
+            data: {
+              $ref: getSchemaPath("EmployeeResponse"),
+            },
+          },
+        },
+      ],
+    },
+  })
+  @ApiOperation({ summary: "Đổi trạng thái nhân viên" })
+  async updateStatus(
+    @Body(new ValidationPipe())
+    employeeUpdateStatusDTO: EmployeeUpdateStatusDTO,
+    @Res() res: Response,
+    @GetUserFromToken() employee: Employee,
+    @Param("id") id: number
+  ) {
+    let response: ResponseData = new ResponseData();
+
+    if (+employee.id !== +id) {
+      throw new HttpException(
+        new ExceptionResponseDetail(
+          HttpStatus.BAD_REQUEST,
+          `Bạn không có quyền thay đổi trạng thái nhân viên này!`
+        ),
+        HttpStatus.OK
+      );
+    }
+
+    let existingEmployee: Employee = await this.employeeService.findOne(
+      employee.id
+    );
+
+    if (!existingEmployee) {
+      throw new HttpException(
+        new ExceptionResponseDetail(
+          HttpStatus.BAD_REQUEST,
+          `Không tìm thấy nhân viên!`
+        ),
+        HttpStatus.OK
+      );
+    }
+
+    let updatedEmployee: Employee = await this.employeeService.updateStatus(
+      employee.id,
+      employeeUpdateStatusDTO.status
+    );
+
+    if (updatedEmployee) {
+      response.setData(updatedEmployee);
+      return res.status(HttpStatus.OK).send(response);
+    } else {
+      response.setMessage(400, "Chỉnh sửa thất bại");
+      return res.status(HttpStatus.BAD_REQUEST).send(response);
+    }
   }
 }
