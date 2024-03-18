@@ -5,6 +5,9 @@ export declare class RestaurantService {
     private restaurantRepository;
     constructor(restaurantRepository: Repository<Restaurant>);
     create(employeeId: number, restaurantDTO: RestaurantDTO): Promise<Restaurant>;
+    createMulti(employeeId: number, restaurantDTO: RestaurantDTO[]): Promise<Restaurant[]>;
     findOneByName(name: string): Promise<Restaurant>;
-    updateName(employeeId: number, restaurantId: number, name: string): Promise<void>;
+    findOneById(restaurantId: number, employeeId: number): Promise<any>;
+    findAll(employeeId: number): Promise<any>;
+    updateName(employeeId: number, restaurantId: number, name: string): Promise<any>;
 }

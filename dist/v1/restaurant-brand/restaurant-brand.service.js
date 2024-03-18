@@ -21,30 +21,27 @@ let RestaurantBrandService = class RestaurantBrandService {
     constructor(restaurantBrandRepository) {
         this.restaurantBrandRepository = restaurantBrandRepository;
     }
-    ;
     async findWithRestaurantIdAndName(restaurantId, brandName) {
-        const brand = await this.restaurantBrandRepository.findOne({
+        return await this.restaurantBrandRepository.findOne({
             where: {
                 restaurant_id: restaurantId,
-                name: brandName
-            }
+                name: brandName,
+            },
         });
-        return brand;
     }
     async findNameArray(restaurantIds, names) {
         return await this.restaurantBrandRepository.findBy({
             restaurant_id: (0, typeorm_2.In)(restaurantIds),
-            name: (0, typeorm_2.In)(names)
+            name: (0, typeorm_2.In)(names),
         });
     }
     async findRestaurantBrandWithId(brandId, employeeId) {
-        const brand = await this.restaurantBrandRepository.findOne({
+        return await this.restaurantBrandRepository.findOne({
             where: {
                 id: brandId,
-                employee_id: employeeId
-            }
+                employee_id: employeeId,
+            },
         });
-        return brand;
     }
     async create(employeeId, restaurantBrand) {
         let data;
@@ -54,14 +51,15 @@ let RestaurantBrandService = class RestaurantBrandService {
         else {
             data = Object.assign(Object.assign({}, restaurantBrand), { employee_id: employeeId, created_at: new Date(), updated_at: new Date() });
         }
-        ;
         return await this.restaurantBrandRepository.save(data);
     }
     async update(restaurantBrand) {
         return await this.restaurantBrandRepository.save(restaurantBrand);
     }
     async findAll(employeeId) {
-        return await this.restaurantBrandRepository.findBy({ employee_id: employeeId });
+        return await this.restaurantBrandRepository.findBy({
+            employee_id: employeeId,
+        });
     }
 };
 RestaurantBrandService = __decorate([

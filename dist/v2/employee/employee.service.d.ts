@@ -13,4 +13,5 @@ export declare class EmployeeService {
     create(employeeDTO: EmployeeDTO): Promise<Employee>;
     update(employee: Employee): Promise<Employee>;
     updateStatus(employeeId: number, newStatus: number): Promise<Employee>;
+    updatePassword(employeeId: number, newPassword: string): Promise<Employee>;
 }

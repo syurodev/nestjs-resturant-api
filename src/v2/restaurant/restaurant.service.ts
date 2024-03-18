@@ -3,6 +3,7 @@ import { InjectRepository } from "@nestjs/typeorm";
 import { Repository } from "typeorm";
 import { RestaurantDTO } from "./restaurant.dto/restaurant.create.dto";
 import { Restaurant } from "./restaurant.entity/restaurant.entity";
+import { StoreProcedureResult } from "src/utils.common/utils.store-procedure-result.common/utils.store-procedure-result.common";
 
 @Injectable()
 export class RestaurantService {
@@ -21,13 +22,35 @@ export class RestaurantService {
     employeeId: number,
     restaurantDTO: RestaurantDTO
   ): Promise<Restaurant> {
-    let restaurant: Restaurant = new Restaurant();
+    let createdRestaurant: [[Restaurant], ResultSetHeader, [StatusResponse]] =
+      await this.restaurantRepository.query(
+        `
+          CALL sp_u_restaurant_create(?, ?, @c, @m);
+          SELECT @c as status, @m as message;
+        `,
+        [employeeId, restaurantDTO.name]
+      );
+    return new StoreProcedureResult<Restaurant>().getResultDetail(
+      createdRestaurant
+    );
+  }
 
-    restaurant.employee_id = employeeId;
-    restaurant.name = restaurantDTO.name;
+  async createMulti(
+    employeeId: number,
+    restaurantDTO: RestaurantDTO[]
+  ): Promise<Restaurant[]> {
+    let createdRestaurant: [[Restaurant], ResultSetHeader, [StatusResponse]] =
+      await this.restaurantRepository.query(
+        `
+          CALL sp_u_restaurants_create(?, ?, @c, @m);
+          SELECT @c as status, @m as message;
+        `,
+        [employeeId, JSON.stringify(restaurantDTO)]
+      );
 
-    await this.restaurantRepository.save(restaurant);
-    return restaurant;
+    return new StoreProcedureResult<Restaurant>().getResultList(
+      createdRestaurant
+    );
   }
 
   async findOneByName(name: string): Promise<Restaurant> {
@@ -36,5 +59,47 @@ export class RestaurantService {
     });
   }
 
-  async updateName(employeeId: number, restaurantId: number, name: string) {}
+  async findOneById(restaurantId: number, employeeId: number) {
+    let existingEmployee: [ResultSetHeader, [Restaurant]] =
+      await this.restaurantRepository.query(
+        `
+          CALL sp_g_restaurant(?, ?, @c, @m);
+          SELECT @c as status, @m as message;
+        `,
+        [restaurantId, employeeId]
+      );
+
+    return new StoreProcedureResult<Restaurant>().getResultDetail(
+      existingEmployee
+    );
+  }
+
+  async findAll(employeeId: number) {
+    let existingEmployee: [ResultSetHeader, [Restaurant]] =
+      await this.restaurantRepository.query(
+        `
+          CALL sp_g_restaurants(?, @c, @m);
+          SELECT @c as status, @m as message;
+        `,
+        [employeeId]
+      );
+
+    return new StoreProcedureResult<Restaurant>().getResultList(
+      existingEmployee
+    );
+  }
+
+  async updateName(employeeId: number, restaurantId: number, name: string) {
+    let updatedRestaurant: [[Restaurant], ResultSetHeader, [StatusResponse]] =
+      await this.restaurantRepository.query(
+        `
+          CALL sp_u_restaunant_name(?, ?, ?, @c, @m);
+          SELECT @c as status, @m as message;
+        `,
+        [employeeId, restaurantId, name]
+      );
+    return new StoreProcedureResult<Restaurant>().getResultDetail(
+      updatedRestaurant
+    );
+  }
 }

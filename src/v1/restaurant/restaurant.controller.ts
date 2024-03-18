@@ -75,10 +75,9 @@ export class RestaurantController {
         HttpStatus.OK
       );
     }
-    console.log(RestaurantDTO);
     let createdRestaurant: Restaurant = (await this.restaurantService.create(
       employee.id,
-      RestaurantDTO
+      restaurantDTO
     )) as Restaurant;
 
     if (!createdRestaurant) {

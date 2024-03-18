@@ -6,4 +6,8 @@ export declare class RestaurantController {
     private restaurantService;
     constructor(restaurantService: RestaurantService);
     create(restaurantDTO: RestaurantDTO, res: Response, employee: Employee): Promise<any>;
+    update(restaurantDTO: RestaurantDTO, res: Response, id: number, employee: Employee): Promise<any>;
+    createMulti(restaurantDTO: RestaurantDTO[], res: Response, employee: Employee): Promise<any>;
+    restaurantDetail(res: Response, id: number, employee: Employee): Promise<Response<any, Record<string, any>>>;
+    findAll(res: Response, employee: Employee): Promise<Response<any, Record<string, any>>>;
 }

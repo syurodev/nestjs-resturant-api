@@ -3,35 +3,56 @@ import { ExceptionResponseDetail } from "../utils.exceptions.common/utils.except
 import { StoreProcedureStatusEnum } from "./utils.store-procedure-status-enum.common";
 
 export class StoreProcedureResult<T> {
-    result: T[];
+  result: T[];
 
-    constructor(result?: T[]) {
-        this.result = result ? null : result;
+  constructor(result?: T[]) {
+    this.result = result ? null : result;
+  }
+
+  public getResultPagination(data: any) {
+    if (
+      data.length < 3 &&
+      (parseInt(data[0][0].status) === StoreProcedureStatusEnum.ERROR ||
+        parseInt(data[0][0].status) === StoreProcedureStatusEnum.FAIL_LOGIC)
+    ) {
+      throw new HttpException(
+        new ExceptionResponseDetail(HttpStatus.BAD_REQUEST, data[0][0].message),
+        HttpStatus.OK
+      );
     }
 
-    public getResultPagination(data: any) {
+    return {
+      data: data[0],
+      total_record: +data[2][0].total_record,
+    };
+  }
 
-        if (data.length < 3 && (parseInt(data[0][0].status) === StoreProcedureStatusEnum.ERROR || parseInt(data[0][0].status) === StoreProcedureStatusEnum.FAIL_LOGIC)) {
-            throw new HttpException(new ExceptionResponseDetail(HttpStatus.BAD_REQUEST, data[0][0].message), HttpStatus.OK);
-        }
-
-        return {
-            data: data[0],
-            total_record: + data[2][0].total_record
-        }
+  public getResultList(data: any) {
+    console.log(data);
+    if (
+      data.length < 3 &&
+      (parseInt(data[1][0].status) === StoreProcedureStatusEnum.ERROR ||
+        parseInt(data[1][0].status) === StoreProcedureStatusEnum.FAIL_LOGIC)
+    ) {
+      throw new HttpException(
+        new ExceptionResponseDetail(HttpStatus.BAD_REQUEST, data[1][0].message),
+        HttpStatus.OK
+      );
     }
+    return data[0];
+  }
 
-    public getResultList(data: any) {
-        if (data.length < 3 && (parseInt(data[0][0].status) === StoreProcedureStatusEnum.ERROR || parseInt(data[0][0].status) === StoreProcedureStatusEnum.FAIL_LOGIC)) {
-            throw new HttpException(new ExceptionResponseDetail(HttpStatus.BAD_REQUEST, data[0][0].message), HttpStatus.OK);
-        } return data[0];
+  public getResultDetail(data: any) {
+    if (
+      data.length < 3 &&
+      (parseInt(data[1][0].status) === StoreProcedureStatusEnum.ERROR ||
+        parseInt(data[1][0].status) === StoreProcedureStatusEnum.FAIL_LOGIC)
+    ) {
+      throw new HttpException(
+        new ExceptionResponseDetail(HttpStatus.BAD_REQUEST, data[1][0].message),
+        HttpStatus.OK
+      );
     }
-
-    public getResultDetail(data: any) {
-        if (data.length < 3 && (parseInt(data[0][0].status) === StoreProcedureStatusEnum.ERROR || parseInt(data[0][0].status) === StoreProcedureStatusEnum.FAIL_LOGIC)) {
-            throw new HttpException(new ExceptionResponseDetail(HttpStatus.BAD_REQUEST, data[0][0].message), HttpStatus.OK);
-        }
-        return data[0][0];
-    }
-
+    return data[0][0];
+  }
 }

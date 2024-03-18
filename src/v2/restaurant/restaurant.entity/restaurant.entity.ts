@@ -17,6 +17,9 @@ export class Restaurant extends BaseEntity {
   @Column({ default: 0 })
   employee_id: number;
 
+  @Column({ default: 1 })
+  status: number;
+
   @Column({ default: "" })
   name: string;
 

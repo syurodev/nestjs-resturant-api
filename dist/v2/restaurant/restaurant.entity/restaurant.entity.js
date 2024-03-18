@@ -22,6 +22,10 @@ __decorate([
     __metadata("design:type", Number)
 ], Restaurant.prototype, "employee_id", void 0);
 __decorate([
+    (0, typeorm_1.Column)({ default: 1 }),
+    __metadata("design:type", Number)
+], Restaurant.prototype, "status", void 0);
+__decorate([
     (0, typeorm_1.Column)({ default: "" }),
     __metadata("design:type", String)
 ], Restaurant.prototype, "name", void 0);

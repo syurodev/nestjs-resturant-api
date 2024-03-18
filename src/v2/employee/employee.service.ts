@@ -8,6 +8,7 @@ import { Repository } from "typeorm";
 import { Password } from "src/utils.common/utils.password.common/utils.password.common";
 import { EmployeeDTO } from "./employee.dto/employee-register.dto";
 import { Employee } from "./employee.entity/employee.entity";
+import { StoreProcedureResult } from "src/utils.common/utils.store-procedure-result.common/utils.store-procedure-result.common";
 
 @Injectable()
 export class EmployeeService {
@@ -25,18 +26,27 @@ export class EmployeeService {
    */
   async findOne(id: number): Promise<Employee> {
     let existingEmployee: [ResultSetHeader, [Employee]] =
-      await this.employeeRepository.query("CALL phamtuanvu.sp_g_employee(?);", [
-        id,
-      ]);
+      await this.employeeRepository.query(
+        `
+          CALL phamtuanvu.sp_g_employee(?, @c, @m);
+          SELECT @c as status, @m as message;
+        `,
+        [id]
+      );
 
-    return existingEmployee[0][0];
+    return new StoreProcedureResult<Employee>().getResultDetail(
+      existingEmployee
+    );
   }
 
   async findAll(): Promise<Employee> {
     const existingEmployee = await this.employeeRepository.query(
-      `CALL phamtuanvu.sp_g_employees()`
+      `
+        CALL phamtuanvu.sp_g_employees(@c, @m);
+        SELECT @c as status, @m as message;
+      `
     );
-    return existingEmployee;
+    return new StoreProcedureResult<Employee>().getResultList(existingEmployee);
   }
 
   /**
@@ -103,10 +113,33 @@ export class EmployeeService {
   async updateStatus(employeeId: number, newStatus: number): Promise<Employee> {
     let updatedEmployee: [ResultSetHeader, [Employee]] =
       await this.employeeRepository.query(
-        "CALL phamtuanvu.sp_u_employee_status(?, ?, @c, @m);",
+        `
+          CALL phamtuanvu.sp_u_employee_status(?, ?, @c, @m);
+          SELECT @c as status, @m as message;
+        `,
         [employeeId, newStatus]
       );
 
-    return updatedEmployee[0][0];
+    return new StoreProcedureResult<Employee>().getResultDetail(
+      updatedEmployee
+    );
+  }
+
+  async updatePassword(
+    employeeId: number,
+    newPassword: string
+  ): Promise<Employee> {
+    let updatedEmployee: [ResultSetHeader, [Employee]] =
+      await this.employeeRepository.query(
+        `
+          CALL phamtuanvu.sp_u_employee_password(?, ?, @c, @m);
+          SELECT @c as status, @m as message;
+        `,
+        [employeeId, newPassword]
+      );
+
+    return new StoreProcedureResult<Employee>().getResultDetail(
+      updatedEmployee
+    );
   }
 }

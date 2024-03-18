@@ -12,6 +12,7 @@ const config_1 = require("@nestjs/config");
 const auth_module_1 = require("./v2/auth/auth.module");
 const employee_module_1 = require("./v2/employee/employee.module");
 const restaurant_module_1 = require("./v2/restaurant/restaurant.module");
+const restaurant_brand_module_1 = require("./v2/restaurant-brand/restaurant-brand.module");
 let AppV2Module = class AppV2Module {
 };
 AppV2Module = __decorate([
@@ -24,6 +25,7 @@ AppV2Module = __decorate([
             auth_module_1.AuthModule,
             employee_module_1.EmployeeModule,
             restaurant_module_1.RestaurantModule,
+            restaurant_brand_module_1.RestaurantBrandModule,
         ],
         controllers: [],
         providers: [],

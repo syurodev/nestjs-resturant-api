@@ -9,23 +9,30 @@ class StoreProcedureResult {
         this.result = result ? null : result;
     }
     getResultPagination(data) {
-        if (data.length < 3 && (parseInt(data[0][0].status) === utils_store_procedure_status_enum_common_1.StoreProcedureStatusEnum.ERROR || parseInt(data[0][0].status) === utils_store_procedure_status_enum_common_1.StoreProcedureStatusEnum.FAIL_LOGIC)) {
+        if (data.length < 3 &&
+            (parseInt(data[0][0].status) === utils_store_procedure_status_enum_common_1.StoreProcedureStatusEnum.ERROR ||
+                parseInt(data[0][0].status) === utils_store_procedure_status_enum_common_1.StoreProcedureStatusEnum.FAIL_LOGIC)) {
             throw new common_1.HttpException(new utils_exception_common_1.ExceptionResponseDetail(common_1.HttpStatus.BAD_REQUEST, data[0][0].message), common_1.HttpStatus.OK);
         }
         return {
             data: data[0],
-            total_record: +data[2][0].total_record
+            total_record: +data[2][0].total_record,
         };
     }
     getResultList(data) {
-        if (data.length < 3 && (parseInt(data[0][0].status) === utils_store_procedure_status_enum_common_1.StoreProcedureStatusEnum.ERROR || parseInt(data[0][0].status) === utils_store_procedure_status_enum_common_1.StoreProcedureStatusEnum.FAIL_LOGIC)) {
-            throw new common_1.HttpException(new utils_exception_common_1.ExceptionResponseDetail(common_1.HttpStatus.BAD_REQUEST, data[0][0].message), common_1.HttpStatus.OK);
+        console.log(data);
+        if (data.length < 3 &&
+            (parseInt(data[1][0].status) === utils_store_procedure_status_enum_common_1.StoreProcedureStatusEnum.ERROR ||
+                parseInt(data[1][0].status) === utils_store_procedure_status_enum_common_1.StoreProcedureStatusEnum.FAIL_LOGIC)) {
+            throw new common_1.HttpException(new utils_exception_common_1.ExceptionResponseDetail(common_1.HttpStatus.BAD_REQUEST, data[1][0].message), common_1.HttpStatus.OK);
         }
         return data[0];
     }
     getResultDetail(data) {
-        if (data.length < 3 && (parseInt(data[0][0].status) === utils_store_procedure_status_enum_common_1.StoreProcedureStatusEnum.ERROR || parseInt(data[0][0].status) === utils_store_procedure_status_enum_common_1.StoreProcedureStatusEnum.FAIL_LOGIC)) {
-            throw new common_1.HttpException(new utils_exception_common_1.ExceptionResponseDetail(common_1.HttpStatus.BAD_REQUEST, data[0][0].message), common_1.HttpStatus.OK);
+        if (data.length < 3 &&
+            (parseInt(data[1][0].status) === utils_store_procedure_status_enum_common_1.StoreProcedureStatusEnum.ERROR ||
+                parseInt(data[1][0].status) === utils_store_procedure_status_enum_common_1.StoreProcedureStatusEnum.FAIL_LOGIC)) {
+            throw new common_1.HttpException(new utils_exception_common_1.ExceptionResponseDetail(common_1.HttpStatus.BAD_REQUEST, data[1][0].message), common_1.HttpStatus.OK);
         }
         return data[0][0];
     }

@@ -22,7 +22,6 @@ export class RestaurantService {
     restaurant: RestaurantDTO | RestaurantDTO[]
   ): Promise<Restaurant | Restaurant[]> {
     let data;
-    console.log(restaurant);
     if (Array.isArray(restaurant)) {
       data = restaurant.map((item) => ({
         ...item,

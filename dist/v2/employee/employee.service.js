@@ -21,20 +21,25 @@ const utils_handle_base64_common_1 = require("../../utils.common/utils.handle-ba
 const typeorm_2 = require("typeorm");
 const utils_password_common_1 = require("../../utils.common/utils.password.common/utils.password.common");
 const employee_entity_1 = require("./employee.entity/employee.entity");
+const utils_store_procedure_result_common_1 = require("../../utils.common/utils.store-procedure-result.common/utils.store-procedure-result.common");
 let EmployeeService = class EmployeeService {
     constructor(employeeRepository, jwtService) {
         this.employeeRepository = employeeRepository;
         this.jwtService = jwtService;
     }
     async findOne(id) {
-        let existingEmployee = await this.employeeRepository.query("CALL phamtuanvu.sp_g_employee(?);", [
-            id,
-        ]);
-        return existingEmployee[0][0];
+        let existingEmployee = await this.employeeRepository.query(`
+          CALL phamtuanvu.sp_g_employee(?, @c, @m);
+          SELECT @c as status, @m as message;
+        `, [id]);
+        return new utils_store_procedure_result_common_1.StoreProcedureResult().getResultDetail(existingEmployee);
     }
     async findAll() {
-        const existingEmployee = await this.employeeRepository.query(`CALL phamtuanvu.sp_g_employees()`);
-        return existingEmployee;
+        const existingEmployee = await this.employeeRepository.query(`
+        CALL phamtuanvu.sp_g_employees(@c, @m);
+        SELECT @c as status, @m as message;
+      `);
+        return new utils_store_procedure_result_common_1.StoreProcedureResult().getResultList(existingEmployee);
     }
     async findOneByPhone(phoneNumber) {
         return await this.employeeRepository.findOne({
@@ -68,8 +73,18 @@ let EmployeeService = class EmployeeService {
         return updatedEmployee[0][0];
     }
     async updateStatus(employeeId, newStatus) {
-        let updatedEmployee = await this.employeeRepository.query("CALL phamtuanvu.sp_u_employee_status(?, ?, @c, @m);", [employeeId, newStatus]);
-        return updatedEmployee[0][0];
+        let updatedEmployee = await this.employeeRepository.query(`
+          CALL phamtuanvu.sp_u_employee_status(?, ?, @c, @m);
+          SELECT @c as status, @m as message;
+        `, [employeeId, newStatus]);
+        return new utils_store_procedure_result_common_1.StoreProcedureResult().getResultDetail(updatedEmployee);
+    }
+    async updatePassword(employeeId, newPassword) {
+        let updatedEmployee = await this.employeeRepository.query(`
+          CALL phamtuanvu.sp_u_employee_password(?, ?, @c, @m);
+          SELECT @c as status, @m as message;
+        `, [employeeId, newPassword]);
+        return new utils_store_procedure_result_common_1.StoreProcedureResult().getResultDetail(updatedEmployee);
     }
 };
 EmployeeService = __decorate([

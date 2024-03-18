@@ -17,23 +17,51 @@ const common_1 = require("@nestjs/common");
 const typeorm_1 = require("@nestjs/typeorm");
 const typeorm_2 = require("typeorm");
 const restaurant_entity_1 = require("./restaurant.entity/restaurant.entity");
+const utils_store_procedure_result_common_1 = require("../../utils.common/utils.store-procedure-result.common/utils.store-procedure-result.common");
 let RestaurantService = class RestaurantService {
     constructor(restaurantRepository) {
         this.restaurantRepository = restaurantRepository;
     }
     async create(employeeId, restaurantDTO) {
-        let restaurant = new restaurant_entity_1.Restaurant();
-        restaurant.employee_id = employeeId;
-        restaurant.name = restaurantDTO.name;
-        await this.restaurantRepository.save(restaurant);
-        return restaurant;
+        let createdRestaurant = await this.restaurantRepository.query(`
+          CALL sp_u_restaurant_create(?, ?, @c, @m);
+          SELECT @c as status, @m as message;
+        `, [employeeId, restaurantDTO.name]);
+        return new utils_store_procedure_result_common_1.StoreProcedureResult().getResultDetail(createdRestaurant);
+    }
+    async createMulti(employeeId, restaurantDTO) {
+        let createdRestaurant = await this.restaurantRepository.query(`
+          CALL sp_u_restaurants_create(?, ?, @c, @m);
+          SELECT @c as status, @m as message;
+        `, [employeeId, JSON.stringify(restaurantDTO)]);
+        return new utils_store_procedure_result_common_1.StoreProcedureResult().getResultList(createdRestaurant);
     }
     async findOneByName(name) {
         return await this.restaurantRepository.findOne({
             where: { name: name },
         });
     }
-    async updateName(employeeId, restaurantId, name) { }
+    async findOneById(restaurantId, employeeId) {
+        let existingEmployee = await this.restaurantRepository.query(`
+          CALL sp_g_restaurant(?, ?, @c, @m);
+          SELECT @c as status, @m as message;
+        `, [restaurantId, employeeId]);
+        return new utils_store_procedure_result_common_1.StoreProcedureResult().getResultDetail(existingEmployee);
+    }
+    async findAll(employeeId) {
+        let existingEmployee = await this.restaurantRepository.query(`
+          CALL sp_g_restaurants(?, @c, @m);
+          SELECT @c as status, @m as message;
+        `, [employeeId]);
+        return new utils_store_procedure_result_common_1.StoreProcedureResult().getResultList(existingEmployee);
+    }
+    async updateName(employeeId, restaurantId, name) {
+        let updatedRestaurant = await this.restaurantRepository.query(`
+          CALL sp_u_restaunant_name(?, ?, ?, @c, @m);
+          SELECT @c as status, @m as message;
+        `, [employeeId, restaurantId, name]);
+        return new utils_store_procedure_result_common_1.StoreProcedureResult().getResultDetail(updatedRestaurant);
+    }
 };
 RestaurantService = __decorate([
     (0, common_1.Injectable)(),

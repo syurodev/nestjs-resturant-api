@@ -7,3 +7,8 @@ type ResultSetHeader = {
   warningStatus: number;
   changedRows: number;
 };
+
+type StatusResponse = {
+  status_code: number;
+  message_error: string;
+};

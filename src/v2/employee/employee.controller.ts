@@ -30,6 +30,9 @@ import { GetUserFromToken } from "src/utils.common/utils.decorators.common/utils
 import { EmployeeDetailResponse } from "./employee.response/employee-detail.response";
 import { EmployeeUpdateDTO } from "./employee.dto/employee-update.dto";
 import { EmployeeUpdateStatusDTO } from "./employee.dto/employee-update-status";
+import { EmployeeUpdatePasswordDTO } from "./employee.dto/employee-update-password.dto";
+import { HandleBase64 } from "src/utils.common/utils.handle-base64.common/utils.handle-base64.common";
+import { Password } from "src/utils.common/utils.password.common/utils.password.common";
 
 @Controller({
   version: VersionEnum.V2.toString(),
@@ -235,5 +238,73 @@ export class EmployeeController {
       response.setMessage(400, "Chỉnh sửa thất bại");
       return res.status(HttpStatus.BAD_REQUEST).send(response);
     }
+  }
+
+  @Post(":id/update-password")
+  @UseGuards(ValidationPipe)
+  @UsePipes()
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(SwaggerResponse) },
+        {
+          properties: {
+            data: {
+              $ref: getSchemaPath("EmployeeResponse"),
+            },
+          },
+        },
+      ],
+    },
+  })
+  @ApiOperation({ summary: "Đổi mật khẩu" })
+  async updateEmployeePassword(
+    @Body(new ValidationPipe())
+    employeeUpdatePasswordDTO: EmployeeUpdatePasswordDTO,
+    @Res() res: Response,
+    @GetUserFromToken() employee: Employee
+  ) {
+    let response: ResponseData = new ResponseData();
+
+    let existingEmployee: Employee = await this.employeeService.findOne(
+      employee.id
+    );
+
+    if (!existingEmployee) {
+      throw new HttpException(
+        new ExceptionResponseDetail(
+          HttpStatus.BAD_REQUEST,
+          `Không tìm thấy nhân viên!`
+        ),
+        HttpStatus.OK
+      );
+    }
+
+    let newPassword = await HandleBase64.decodePasswordBase64(
+      employeeUpdatePasswordDTO.new_password
+    );
+    let oldPassword = await HandleBase64.decodePasswordBase64(
+      employeeUpdatePasswordDTO.old_password
+    );
+
+    if (
+      await Password.comparePassword(oldPassword, existingEmployee.password)
+    ) {
+      let updatedEmployee: Employee = await this.employeeService.updatePassword(
+        employee.id,
+        await Password.bcryptPassword(newPassword)
+      );
+
+      if (updatedEmployee) {
+        return res.status(HttpStatus.OK).send("Chỉnh sửa thành công");
+      } else {
+        response.setMessage(HttpStatus.BAD_REQUEST, "Chỉnh sửa thất bại");
+        return res.status(HttpStatus.BAD_REQUEST).send(response);
+      }
+    }
+
+    response.setMessage(HttpStatus.BAD_REQUEST, "Mật khẩu không chính xác!");
+    return res.status(HttpStatus.BAD_REQUEST).send(response);
   }
 }

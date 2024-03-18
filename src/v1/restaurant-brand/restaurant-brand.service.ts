@@ -9,17 +9,18 @@ export class RestaurantBrandService {
   constructor(
     @InjectRepository(RestaurantBrand)
     private restaurantBrandRepository: Repository<RestaurantBrand>
-  ) { };
+  ) {}
 
-  async findWithRestaurantIdAndName(restaurantId: number, brandName: string): Promise<RestaurantBrand> {
-    const brand = await this.restaurantBrandRepository.findOne({
+  async findWithRestaurantIdAndName(
+    restaurantId: number,
+    brandName: string
+  ): Promise<RestaurantBrand> {
+    return await this.restaurantBrandRepository.findOne({
       where: {
         restaurant_id: restaurantId,
-        name: brandName
-      }
+        name: brandName,
+      },
     });
-
-    return brand;
   }
 
   async findNameArray(
@@ -28,19 +29,20 @@ export class RestaurantBrandService {
   ): Promise<RestaurantBrand[]> {
     return await this.restaurantBrandRepository.findBy({
       restaurant_id: In(restaurantIds),
-      name: In(names)
+      name: In(names),
     });
   }
 
-  async findRestaurantBrandWithId(brandId: number, employeeId: number): Promise<RestaurantBrand> {
-    const brand = await this.restaurantBrandRepository.findOne({
+  async findRestaurantBrandWithId(
+    brandId: number,
+    employeeId: number
+  ): Promise<RestaurantBrand> {
+    return await this.restaurantBrandRepository.findOne({
       where: {
         id: brandId,
-        employee_id: employeeId
-      }
+        employee_id: employeeId,
+      },
     });
-
-    return brand;
   }
 
   async create(
@@ -54,15 +56,15 @@ export class RestaurantBrandService {
         employee_id: employeeId,
         created_at: new Date(),
         updated_at: new Date(),
-      }))
+      }));
     } else {
       data = {
         ...restaurantBrand,
         employee_id: employeeId,
         created_at: new Date(),
         updated_at: new Date(),
-      }
-    };
+      };
+    }
 
     return await this.restaurantBrandRepository.save(data);
   }
@@ -72,6 +74,8 @@ export class RestaurantBrandService {
   }
 
   async findAll(employeeId: number): Promise<RestaurantBrand[]> {
-    return await this.restaurantBrandRepository.findBy({ employee_id: employeeId })
+    return await this.restaurantBrandRepository.findBy({
+      employee_id: employeeId,
+    });
   }
 }
