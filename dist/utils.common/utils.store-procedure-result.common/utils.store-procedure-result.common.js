@@ -10,8 +10,8 @@ class StoreProcedureResult {
     }
     getResultPagination(data) {
         if (data.length < 3 &&
-            (parseInt(data[0][0].status) === utils_store_procedure_status_enum_common_1.StoreProcedureStatusEnum.ERROR ||
-                parseInt(data[0][0].status) === utils_store_procedure_status_enum_common_1.StoreProcedureStatusEnum.FAIL_LOGIC)) {
+            (parseInt(data[1][0].status) === utils_store_procedure_status_enum_common_1.StoreProcedureStatusEnum.ERROR ||
+                parseInt(data[1][0].status) === utils_store_procedure_status_enum_common_1.StoreProcedureStatusEnum.FAIL_LOGIC)) {
             throw new common_1.HttpException(new utils_exception_common_1.ExceptionResponseDetail(common_1.HttpStatus.BAD_REQUEST, data[0][0].message), common_1.HttpStatus.OK);
         }
         return {
@@ -20,7 +20,6 @@ class StoreProcedureResult {
         };
     }
     getResultList(data) {
-        console.log(data);
         if (data.length < 3 &&
             (parseInt(data[1][0].status) === utils_store_procedure_status_enum_common_1.StoreProcedureStatusEnum.ERROR ||
                 parseInt(data[1][0].status) === utils_store_procedure_status_enum_common_1.StoreProcedureStatusEnum.FAIL_LOGIC)) {

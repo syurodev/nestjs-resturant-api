@@ -29,6 +29,7 @@ const employee_update_status_1 = require("./employee.dto/employee-update-status"
 const employee_update_password_dto_1 = require("./employee.dto/employee-update-password.dto");
 const utils_handle_base64_common_1 = require("../../utils.common/utils.handle-base64.common/utils.handle-base64.common");
 const utils_password_common_1 = require("../../utils.common/utils.password.common/utils.password.common");
+const employees_response_1 = require("./employee.response/employees.response");
 let EmployeeController = class EmployeeController {
     constructor(employeeService) {
         this.employeeService = employeeService;
@@ -103,6 +104,11 @@ let EmployeeController = class EmployeeController {
         }
         response.setMessage(common_1.HttpStatus.BAD_REQUEST, "Mật khẩu không chính xác!");
         return res.status(common_1.HttpStatus.BAD_REQUEST).send(response);
+    }
+    async employees(res) {
+        let response = new utils_response_common_1.ResponseData();
+        response.setData(new employees_response_1.EmployeesResponse().mapToList(await this.employeeService.findAll()));
+        return res.status(common_1.HttpStatus.OK).send(response);
     }
 };
 __decorate([
@@ -238,6 +244,31 @@ __decorate([
     __metadata("design:paramtypes", [employee_update_password_dto_1.EmployeeUpdatePasswordDTO, Object, employee_entity_1.Employee]),
     __metadata("design:returntype", Promise)
 ], EmployeeController.prototype, "updateEmployeePassword", null);
+__decorate([
+    (0, common_1.Get)(),
+    (0, common_1.UseGuards)(common_1.ValidationPipe),
+    (0, common_1.UsePipes)(),
+    (0, swagger_1.ApiBearerAuth)(),
+    (0, swagger_1.ApiOkResponse)({
+        schema: {
+            allOf: [
+                { $ref: (0, swagger_1.getSchemaPath)(utils_swagger_response_1.SwaggerResponse) },
+                {
+                    properties: {
+                        data: {
+                            $ref: (0, swagger_1.getSchemaPath)("EmployeeResponse"),
+                        },
+                    },
+                },
+            ],
+        },
+    }),
+    (0, swagger_1.ApiOperation)({ summary: "Danh sách nhân viên" }),
+    __param(0, (0, common_1.Res)()),
+    __metadata("design:type", Function),
+    __metadata("design:paramtypes", [Object]),
+    __metadata("design:returntype", Promise)
+], EmployeeController.prototype, "employees", null);
 EmployeeController = __decorate([
     (0, common_1.Controller)({
         version: utils_version_enum_1.VersionEnum.V2.toString(),

@@ -13,4 +13,5 @@ export declare class EmployeeController {
     updateEmployee(employeeUpdateDTO: EmployeeUpdateDTO, res: Response, employee: Employee): Promise<Response<any, Record<string, any>>>;
     updateStatus(employeeUpdateStatusDTO: EmployeeUpdateStatusDTO, res: Response, employee: Employee, id: number): Promise<Response<any, Record<string, any>>>;
     updateEmployeePassword(employeeUpdatePasswordDTO: EmployeeUpdatePasswordDTO, res: Response, employee: Employee): Promise<Response<any, Record<string, any>>>;
+    employees(res: Response): Promise<Response<any, Record<string, any>>>;
 }

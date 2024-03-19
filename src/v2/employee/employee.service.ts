@@ -28,7 +28,7 @@ export class EmployeeService {
     let existingEmployee: [ResultSetHeader, [Employee]] =
       await this.employeeRepository.query(
         `
-          CALL phamtuanvu.sp_g_employee(?, @c, @m);
+          CALL sp_g_employee(?, @c, @m);
           SELECT @c as status, @m as message;
         `,
         [id]
@@ -39,10 +39,10 @@ export class EmployeeService {
     );
   }
 
-  async findAll(): Promise<Employee> {
+  async findAll(): Promise<Employee[]> {
     const existingEmployee = await this.employeeRepository.query(
       `
-        CALL phamtuanvu.sp_g_employees(@c, @m);
+        CALL sp_g_employees(@c, @m);
         SELECT @c as status, @m as message;
       `
     );
@@ -96,25 +96,24 @@ export class EmployeeService {
   }
 
   async update(employee: Employee): Promise<Employee> {
-    let updatedEmployee: [ResultSetHeader, [Employee]] =
-      await this.employeeRepository.query(
-        "CALL sp_u_employee(?, ?, ?, ?, @e, @m)",
-        [
-          employee.id,
-          employee.full_name,
-          employee.phone_number,
-          employee.gender,
-        ]
-      );
+    let updatedEmployee: any = await this.employeeRepository.query(
+      `
+          CALL sp_u_employee(?, ?, ?, ?, @e, @m);
+          SELECT @c as status, @m as message;
+        `,
+      [employee.id, employee.full_name, employee.phone_number, employee.gender]
+    );
 
-    return updatedEmployee[0][0];
+    return new StoreProcedureResult<Employee>().getResultDetail(
+      updatedEmployee
+    );
   }
 
   async updateStatus(employeeId: number, newStatus: number): Promise<Employee> {
     let updatedEmployee: [ResultSetHeader, [Employee]] =
       await this.employeeRepository.query(
         `
-          CALL phamtuanvu.sp_u_employee_status(?, ?, @c, @m);
+          CALL sp_u_employee_status(?, ?, @c, @m);
           SELECT @c as status, @m as message;
         `,
         [employeeId, newStatus]
@@ -132,7 +131,7 @@ export class EmployeeService {
     let updatedEmployee: [ResultSetHeader, [Employee]] =
       await this.employeeRepository.query(
         `
-          CALL phamtuanvu.sp_u_employee_password(?, ?, @c, @m);
+          CALL sp_u_employee_password(?, ?, @c, @m);
           SELECT @c as status, @m as message;
         `,
         [employeeId, newPassword]

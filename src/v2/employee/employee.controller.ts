@@ -33,6 +33,7 @@ import { EmployeeUpdateStatusDTO } from "./employee.dto/employee-update-status";
 import { EmployeeUpdatePasswordDTO } from "./employee.dto/employee-update-password.dto";
 import { HandleBase64 } from "src/utils.common/utils.handle-base64.common/utils.handle-base64.common";
 import { Password } from "src/utils.common/utils.password.common/utils.password.common";
+import { EmployeesResponse } from "./employee.response/employees.response";
 
 @Controller({
   version: VersionEnum.V2.toString(),
@@ -306,5 +307,33 @@ export class EmployeeController {
 
     response.setMessage(HttpStatus.BAD_REQUEST, "Mật khẩu không chính xác!");
     return res.status(HttpStatus.BAD_REQUEST).send(response);
+  }
+
+  @Get()
+  @UseGuards(ValidationPipe)
+  @UsePipes()
+  @ApiBearerAuth()
+  @ApiOkResponse({
+    schema: {
+      allOf: [
+        { $ref: getSchemaPath(SwaggerResponse) },
+        {
+          properties: {
+            data: {
+              $ref: getSchemaPath("EmployeeResponse"),
+            },
+          },
+        },
+      ],
+    },
+  })
+  @ApiOperation({ summary: "Danh sách nhân viên" })
+  async employees(@Res() res: Response) {
+    let response: ResponseData = new ResponseData();
+
+    response.setData(
+      new EmployeesResponse().mapToList(await this.employeeService.findAll())
+    );
+    return res.status(HttpStatus.OK).send(response);
   }
 }

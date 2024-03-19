@@ -1,5 +1,23 @@
-import { Body, Controller, Get, HttpCode, HttpException, HttpStatus, Param, Post, Res, UseGuards, UsePipes, ValidationPipe } from "@nestjs/common";
-import { ApiBearerAuth, ApiOkResponse, ApiOperation, getSchemaPath } from "@nestjs/swagger";
+import {
+  Body,
+  Controller,
+  Get,
+  HttpCode,
+  HttpException,
+  HttpStatus,
+  Param,
+  Post,
+  Res,
+  UseGuards,
+  UsePipes,
+  ValidationPipe,
+} from "@nestjs/common";
+import {
+  ApiBearerAuth,
+  ApiOkResponse,
+  ApiOperation,
+  getSchemaPath,
+} from "@nestjs/swagger";
 import { Response } from "express";
 
 import { VersionEnum } from "src/utils.common/utils.enum.common/utils.version.enum";
@@ -21,7 +39,7 @@ import { AreasResponse } from "./areas.response/areas.response";
 })
 @ApiBearerAuth()
 export class AreasController {
-  constructor(private areasService: AreasService) { }
+  constructor(private areasService: AreasService) {}
 
   @Post("/create")
   @UseGuards(ValidationPipe)
@@ -41,7 +59,7 @@ export class AreasController {
     },
   })
   @ApiBearerAuth()
-  @ApiOperation({ summary: "Tạo thương hiệu" })
+  @ApiOperation({ summary: "Tạo khu vực" })
   async create(
     @Body(new ValidationPipe()) areaCreateDto: AreaCreateDTO,
     @Res() res: Response,
@@ -66,7 +84,10 @@ export class AreasController {
       );
     }
 
-    const savedArea = await this.areasService.create(employee.id, areaCreateDto);
+    const savedArea = await this.areasService.create(
+      employee.id,
+      areaCreateDto
+    );
 
     if (!savedArea) {
       response.setMessage(400, "Tạo khu vực thất bại!");
@@ -107,22 +128,27 @@ export class AreasController {
       areaCreateDto.map((item) => item.restaurant_id),
       areaCreateDto.map((item) => item.restaurant_brand_id),
       areaCreateDto.map((item) => item.branch_id),
-      areaCreateDto.map((item) => item.name),
-    )
+      areaCreateDto.map((item) => item.name)
+    );
 
     if (existingArea.length > 0) {
       throw new HttpException(
         new ExceptionResponseDetail(
           HttpStatus.BAD_REQUEST,
-          `Tên khu vực [${existingArea.map(item => item.name)}] này đã tồn tại!`
+          `Tên khu vực [${existingArea.map(
+            (item) => item.name
+          )}] này đã tồn tại!`
         ),
         HttpStatus.OK
       );
     }
 
-    let savedArea: Areas[] = await this.areasService.create(employee.id, areaCreateDto) as Areas[];
+    let savedArea: Areas[] = (await this.areasService.create(
+      employee.id,
+      areaCreateDto
+    )) as Areas[];
 
-    response.setData(new AreasResponse().mapToList(savedArea))
+    response.setData(new AreasResponse().mapToList(savedArea));
     return res.status(HttpStatus.OK).send(response);
   }
 
@@ -151,10 +177,12 @@ export class AreasController {
     @Param("id") id: number,
     @GetUserFromToken() employee: Employee
   ) {
-
     let response: ResponseData = new ResponseData();
 
-    let existingArea: Areas = await this.areasService.findWithId(id, employee.id);
+    let existingArea: Areas = await this.areasService.findWithId(
+      id,
+      employee.id
+    );
 
     if (!existingArea) {
       throw new HttpException(
@@ -175,7 +203,7 @@ export class AreasController {
       existingArea.restaurant_brand_id,
       existingArea.branch_id,
       branchesUpdateDTO.name
-    )
+    );
 
     if (existingAreaName) {
       throw new HttpException(
@@ -200,9 +228,9 @@ export class AreasController {
         ),
         HttpStatus.OK
       );
-    };
+    }
 
-    response.setData(new AreaDetailResponse(updatedArea))
+    response.setData(new AreaDetailResponse(updatedArea));
     return res.status(HttpStatus.OK).send(response);
   }
 
@@ -232,7 +260,10 @@ export class AreasController {
   ) {
     let response: ResponseData = new ResponseData();
 
-    let existingArea: Areas = await this.areasService.findWithId(id, employee.id);
+    let existingArea: Areas = await this.areasService.findWithId(
+      id,
+      employee.id
+    );
 
     if (!existingArea) {
       response.setMessage(HttpStatus.BAD_REQUEST, "Không tìm thấy khu vực");
@@ -262,16 +293,16 @@ export class AreasController {
     },
   })
   @ApiOperation({ summary: "Danh sách khu vực" })
-  async branches(
-    @Res() res: Response,
-    @GetUserFromToken() employee: Employee,
-  ) {
+  async branches(@Res() res: Response, @GetUserFromToken() employee: Employee) {
     let response: ResponseData = new ResponseData();
 
     let areas: Areas[] = await this.areasService.findAll(employee.id);
 
     if (!areas || areas.length === 0) {
-      response.setMessage(HttpStatus.BAD_REQUEST, "Không tìm thấy danh sách khu vực")
+      response.setMessage(
+        HttpStatus.BAD_REQUEST,
+        "Không tìm thấy danh sách khu vực"
+      );
       return res.status(HttpStatus.OK).send(response);
     }
 

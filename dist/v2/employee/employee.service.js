@@ -29,14 +29,14 @@ let EmployeeService = class EmployeeService {
     }
     async findOne(id) {
         let existingEmployee = await this.employeeRepository.query(`
-          CALL phamtuanvu.sp_g_employee(?, @c, @m);
+          CALL sp_g_employee(?, @c, @m);
           SELECT @c as status, @m as message;
         `, [id]);
         return new utils_store_procedure_result_common_1.StoreProcedureResult().getResultDetail(existingEmployee);
     }
     async findAll() {
         const existingEmployee = await this.employeeRepository.query(`
-        CALL phamtuanvu.sp_g_employees(@c, @m);
+        CALL sp_g_employees(@c, @m);
         SELECT @c as status, @m as message;
       `);
         return new utils_store_procedure_result_common_1.StoreProcedureResult().getResultList(existingEmployee);
@@ -64,24 +64,22 @@ let EmployeeService = class EmployeeService {
         return employee;
     }
     async update(employee) {
-        let updatedEmployee = await this.employeeRepository.query("CALL sp_u_employee(?, ?, ?, ?, @e, @m)", [
-            employee.id,
-            employee.full_name,
-            employee.phone_number,
-            employee.gender,
-        ]);
-        return updatedEmployee[0][0];
+        let updatedEmployee = await this.employeeRepository.query(`
+          CALL sp_u_employee(?, ?, ?, ?, @e, @m);
+          SELECT @c as status, @m as message;
+        `, [employee.id, employee.full_name, employee.phone_number, employee.gender]);
+        return new utils_store_procedure_result_common_1.StoreProcedureResult().getResultDetail(updatedEmployee);
     }
     async updateStatus(employeeId, newStatus) {
         let updatedEmployee = await this.employeeRepository.query(`
-          CALL phamtuanvu.sp_u_employee_status(?, ?, @c, @m);
+          CALL sp_u_employee_status(?, ?, @c, @m);
           SELECT @c as status, @m as message;
         `, [employeeId, newStatus]);
         return new utils_store_procedure_result_common_1.StoreProcedureResult().getResultDetail(updatedEmployee);
     }
     async updatePassword(employeeId, newPassword) {
         let updatedEmployee = await this.employeeRepository.query(`
-          CALL phamtuanvu.sp_u_employee_password(?, ?, @c, @m);
+          CALL sp_u_employee_password(?, ?, @c, @m);
           SELECT @c as status, @m as message;
         `, [employeeId, newPassword]);
         return new utils_store_procedure_result_common_1.StoreProcedureResult().getResultDetail(updatedEmployee);

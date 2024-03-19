@@ -22,14 +22,13 @@ export class RestaurantService {
     employeeId: number,
     restaurantDTO: RestaurantDTO
   ): Promise<Restaurant> {
-    let createdRestaurant: [[Restaurant], ResultSetHeader, [StatusResponse]] =
-      await this.restaurantRepository.query(
-        `
+    let createdRestaurant: any = await this.restaurantRepository.query(
+      `
           CALL sp_u_restaurant_create(?, ?, @c, @m);
           SELECT @c as status, @m as message;
         `,
-        [employeeId, restaurantDTO.name]
-      );
+      [employeeId, restaurantDTO.name]
+    );
     return new StoreProcedureResult<Restaurant>().getResultDetail(
       createdRestaurant
     );
@@ -39,14 +38,13 @@ export class RestaurantService {
     employeeId: number,
     restaurantDTO: RestaurantDTO[]
   ): Promise<Restaurant[]> {
-    let createdRestaurant: [[Restaurant], ResultSetHeader, [StatusResponse]] =
-      await this.restaurantRepository.query(
-        `
+    let createdRestaurant: any = await this.restaurantRepository.query(
+      `
           CALL sp_u_restaurants_create(?, ?, @c, @m);
           SELECT @c as status, @m as message;
         `,
-        [employeeId, JSON.stringify(restaurantDTO)]
-      );
+      [employeeId, JSON.stringify(restaurantDTO)]
+    );
 
     return new StoreProcedureResult<Restaurant>().getResultList(
       createdRestaurant
@@ -90,14 +88,13 @@ export class RestaurantService {
   }
 
   async updateName(employeeId: number, restaurantId: number, name: string) {
-    let updatedRestaurant: [[Restaurant], ResultSetHeader, [StatusResponse]] =
-      await this.restaurantRepository.query(
-        `
+    let updatedRestaurant = await this.restaurantRepository.query(
+      `
           CALL sp_u_restaunant_name(?, ?, ?, @c, @m);
           SELECT @c as status, @m as message;
         `,
-        [employeeId, restaurantId, name]
-      );
+      [employeeId, restaurantId, name]
+    );
     return new StoreProcedureResult<Restaurant>().getResultDetail(
       updatedRestaurant
     );

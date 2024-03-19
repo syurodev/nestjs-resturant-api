@@ -48,9 +48,9 @@ let AreasController = class AreasController {
         let response = new utils_response_common_1.ResponseData();
         let existingArea = await this.areasService.findNameArray(areaCreateDto.map((item) => item.restaurant_id), areaCreateDto.map((item) => item.restaurant_brand_id), areaCreateDto.map((item) => item.branch_id), areaCreateDto.map((item) => item.name));
         if (existingArea.length > 0) {
-            throw new common_1.HttpException(new utils_exception_common_1.ExceptionResponseDetail(common_1.HttpStatus.BAD_REQUEST, `Tên khu vực [${existingArea.map(item => item.name)}] này đã tồn tại!`), common_1.HttpStatus.OK);
+            throw new common_1.HttpException(new utils_exception_common_1.ExceptionResponseDetail(common_1.HttpStatus.BAD_REQUEST, `Tên khu vực [${existingArea.map((item) => item.name)}] này đã tồn tại!`), common_1.HttpStatus.OK);
         }
-        let savedArea = await this.areasService.create(employee.id, areaCreateDto);
+        let savedArea = (await this.areasService.create(employee.id, areaCreateDto));
         response.setData(new areas_response_1.AreasResponse().mapToList(savedArea));
         return res.status(common_1.HttpStatus.OK).send(response);
     }
@@ -70,7 +70,6 @@ let AreasController = class AreasController {
         if (!updatedArea) {
             throw new common_1.HttpException(new utils_exception_common_1.ExceptionResponseDetail(common_1.HttpStatus.BAD_REQUEST, `Cập nhật khu vực không thành công!`), common_1.HttpStatus.OK);
         }
-        ;
         response.setData(new area_detail_response_1.AreaDetailResponse(updatedArea));
         return res.status(common_1.HttpStatus.OK).send(response);
     }
@@ -114,7 +113,7 @@ __decorate([
         },
     }),
     (0, swagger_1.ApiBearerAuth)(),
-    (0, swagger_1.ApiOperation)({ summary: "Tạo thương hiệu" }),
+    (0, swagger_1.ApiOperation)({ summary: "Tạo khu vực" }),
     __param(0, (0, common_1.Body)(new common_1.ValidationPipe())),
     __param(1, (0, common_1.Res)()),
     __param(2, (0, utils_decorators_common_1.GetUserFromToken)()),

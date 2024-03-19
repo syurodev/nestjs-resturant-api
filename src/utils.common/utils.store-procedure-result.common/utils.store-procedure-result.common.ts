@@ -12,8 +12,8 @@ export class StoreProcedureResult<T> {
   public getResultPagination(data: any) {
     if (
       data.length < 3 &&
-      (parseInt(data[0][0].status) === StoreProcedureStatusEnum.ERROR ||
-        parseInt(data[0][0].status) === StoreProcedureStatusEnum.FAIL_LOGIC)
+      (parseInt(data[1][0].status) === StoreProcedureStatusEnum.ERROR ||
+        parseInt(data[1][0].status) === StoreProcedureStatusEnum.FAIL_LOGIC)
     ) {
       throw new HttpException(
         new ExceptionResponseDetail(HttpStatus.BAD_REQUEST, data[0][0].message),
@@ -28,7 +28,6 @@ export class StoreProcedureResult<T> {
   }
 
   public getResultList(data: any) {
-    console.log(data);
     if (
       data.length < 3 &&
       (parseInt(data[1][0].status) === StoreProcedureStatusEnum.ERROR ||
