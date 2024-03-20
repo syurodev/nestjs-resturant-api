@@ -154,3 +154,62 @@ store_procedure:BEGIN
 	FROM 	branches b
 	WHERE 	b.id = LAST_INSERT_ID();
 END
+
+
+--sp_u_branche
+CREATE DEFINER=`phamtuanvu`@`%` PROCEDURE `phamtuanvu`.`sp_u_branche`(
+	IN `employeeId` INT(11),
+	IN `brancheId` INT(11),
+	IN `_name` VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci,
+	OUT `status_code` TINYINT(1),
+	OUT `message_error` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci
+)
+store_procedure:BEGIN
+	DECLARE `isExitBranche` TINYINT(1) DEFAULT 0;
+	DECLARE `isExitBrancheName` TINYINT(1) DEFAULT 0;
+	DECLARE EXIT HANDLER FOR SQLEXCEPTION
+	BEGIN
+		SET `status_code` = 1;
+		GET DIAGNOSTICS CONDITION 1 `message_error` = MESSAGE_TEXT;
+		SELECT `status_code`, `message_error`;
+	END;
+
+	SET `status_code` = 0;
+	SET `message_error` = 'Success';
+
+	SELECT 	COUNT(*)
+	INTO 	`isExitBranche`
+	FROM	branches b
+	WHERE 	b.id = `brancheId`
+			AND b.employee_id = `employeeId`;
+
+	IF(`isExitBranche` < 1) THEN
+		SET `status_code` = 2;
+		SET `message_error` = 'Không tìm thấy chi nhánh';
+		LEAVE store_procedure;
+	END IF;
+
+	SELECT 	COUNT(*)
+	INTO 	`isExitBrancheName`
+	FROM 	branches b
+	WHERE 	b.name = `_name`
+			AND b.id != `brancheId`;
+
+	IF(`isExitBrancheName` > 0) THEN
+		SET `status_code` = 2;
+		SET `message_error` = 'Tên chi nhánh đã tồn tại';
+		LEAVE store_procedure;
+	END IF;
+
+	UPDATE branches b
+	SET name = `_name`
+	WHERE b.id = `brancheId`;
+
+	SELECT 	b.id,
+			b.name,
+			b.status,
+			b.created_at
+	FROM 	branches b
+	WHERE 	b.employee_id = `employeeId`
+			AND b.id = `brancheId`;
+END
