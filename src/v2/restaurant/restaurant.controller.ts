@@ -15,7 +15,6 @@ import { Response } from "express";
 
 import { GetUserFromToken } from "src/utils.common/utils.decorators.common/utils.decorators.common";
 import { VersionEnum } from "src/utils.common/utils.enum.common/utils.version.enum";
-import { ExceptionResponseDetail } from "src/utils.common/utils.exceptions.common/utils.exception-common";
 import { ResponseData } from "src/utils.common/utils.response.common/utils.response.common";
 import { Employee } from "../employee/employee.entity/employee.entity";
 import { RestaurantDTO } from "./restaurant.dto/restaurant.create.dto";
@@ -74,7 +73,6 @@ export class RestaurantController {
         HttpStatus.BAD_REQUEST,
         "Tạo nhà hàng không thành công"
       );
-      return res.status(HttpStatus.OK).send(response);
     }
 
     response.setData(createdRestaurant);

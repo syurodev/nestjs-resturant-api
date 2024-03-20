@@ -1,7 +1,7 @@
 import { Injectable } from "@nestjs/common";
 import { InjectRepository } from "@nestjs/typeorm";
 import { RestaurantBrand } from "./restaurant-brand.entity/restaurant-brand.entity";
-import { In, Like, Repository } from "typeorm";
+import { Repository } from "typeorm";
 import { RestaurantBrandDTO } from "./restaurant-brand.dto/restaurant-brand.create.dto";
 import { StoreProcedureResult } from "src/utils.common/utils.store-procedure-result.common/utils.store-procedure-result.common";
 
@@ -11,20 +11,6 @@ export class RestaurantBrandService {
     @InjectRepository(RestaurantBrand)
     private restaurantBrandRepository: Repository<RestaurantBrand>
   ) {}
-
-  async findWithRestaurantIdAndName(
-    restaurantId: number,
-    brandName: string
-  ): Promise<RestaurantBrand> {
-    const brand = await this.restaurantBrandRepository.findOne({
-      where: {
-        restaurant_id: restaurantId,
-        name: brandName,
-      },
-    });
-
-    return brand;
-  }
 
   async findRestaurantBrandWithId(
     brandId: number,
@@ -75,8 +61,27 @@ export class RestaurantBrandService {
     );
   }
 
-  async update(restaurantBrand: RestaurantBrand): Promise<RestaurantBrand> {
-    return await this.restaurantBrandRepository.save(restaurantBrand);
+  async update(
+    employeeId: number,
+    restaurantBrandId: number,
+    restaurantBrandUpdateDTO: RestaurantBrandDTO
+  ): Promise<RestaurantBrand> {
+    let updatedRestaurantBrand = await this.restaurantBrandRepository.query(
+      `
+        CALL sp_u_restaurant_brand_name(?, ?, ?, ?, @c, @m);
+        SELECT @c as status, @m as message;
+      `,
+      [
+        employeeId,
+        restaurantBrandId,
+        restaurantBrandUpdateDTO.restaurant_id,
+        restaurantBrandUpdateDTO.name,
+      ]
+    );
+
+    return new StoreProcedureResult<RestaurantBrand>().getResultDetail(
+      updatedRestaurantBrand
+    );
   }
 
   async findAll(employeeId: number): Promise<RestaurantBrand[]> {

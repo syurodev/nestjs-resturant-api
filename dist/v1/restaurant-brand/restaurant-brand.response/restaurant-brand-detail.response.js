@@ -11,10 +11,12 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.RestaurantBrandDetailResponse = void 0;
 const swagger_1 = require("@nestjs/swagger");
-const restaurant_brand_entity_1 = require("../restaurant-brand.entity/restaurant-brand.entity");
 class RestaurantBrandDetailResponse {
     constructor(brand) {
-        this.brand = brand;
+        this.id = brand.id;
+        this.name = brand.name;
+        this.status = brand.status;
+        this.created_at = brand.created_at;
     }
 }
 __decorate([
@@ -23,7 +25,7 @@ __decorate([
         example: "",
         description: "thông tin của thương hiệu",
     }),
-    __metadata("design:type", restaurant_brand_entity_1.RestaurantBrand)
-], RestaurantBrandDetailResponse.prototype, "brand", void 0);
+    __metadata("design:type", Number)
+], RestaurantBrandDetailResponse.prototype, "id", void 0);
 exports.RestaurantBrandDetailResponse = RestaurantBrandDetailResponse;
 //# sourceMappingURL=restaurant-brand-detail.response.js.map

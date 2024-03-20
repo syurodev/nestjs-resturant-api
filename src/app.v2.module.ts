@@ -6,6 +6,7 @@ import { RestaurantModule } from "./v2/restaurant/restaurant.module";
 import { RestaurantBrandModule } from "./v2/restaurant-brand/restaurant-brand.module";
 import { BranchesModule } from "./v2/branches/branches.module";
 import { AreasModule } from "./v2/areas/areas.module";
+import { TablesModule } from "./v2/tables/tables.module";
 
 @Module({
   imports: [
@@ -19,6 +20,7 @@ import { AreasModule } from "./v2/areas/areas.module";
     RestaurantBrandModule,
     BranchesModule,
     AreasModule,
+    TablesModule,
   ],
   controllers: [],
   providers: [],

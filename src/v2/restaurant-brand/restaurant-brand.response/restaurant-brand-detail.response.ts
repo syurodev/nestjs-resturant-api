@@ -7,10 +7,15 @@ export class RestaurantBrandDetailResponse {
     example: "",
     description: "thông tin của thương hiệu",
   })
-
-  brand: RestaurantBrand
+  id: number;
+  name: string;
+  status: number;
+  created_at: Date;
 
   constructor(brand?: RestaurantBrand) {
-    this.brand = brand
+    this.id = brand.id;
+    this.name = brand.name;
+    this.status = brand.status;
+    this.created_at = brand.created_at;
   }
 }

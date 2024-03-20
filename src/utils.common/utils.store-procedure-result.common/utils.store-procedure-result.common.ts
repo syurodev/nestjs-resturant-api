@@ -28,15 +28,30 @@ export class StoreProcedureResult<T> {
   }
 
   public getResultList(data: any) {
+    console.log(data);
     if (
       data.length < 3 &&
       (parseInt(data[1][0].status) === StoreProcedureStatusEnum.ERROR ||
         parseInt(data[1][0].status) === StoreProcedureStatusEnum.FAIL_LOGIC)
     ) {
-      throw new HttpException(
-        new ExceptionResponseDetail(HttpStatus.BAD_REQUEST, data[1][0].message),
-        HttpStatus.OK
-      );
+      const jsonString = convertMySQLStringToJSON(data[1][0].message);
+      if (checkMessageType(jsonString) === 0) {
+        throw new HttpException(
+          new ExceptionResponseDetail(
+            HttpStatus.BAD_REQUEST,
+            data[1][0].message
+          ),
+          HttpStatus.OK
+        );
+      } else {
+        throw new HttpException(
+          new ExceptionResponseDetail(
+            HttpStatus.BAD_REQUEST,
+            JSON.parse(jsonString)
+          ),
+          HttpStatus.OK
+        );
+      }
     }
     return data[0];
   }
@@ -53,5 +68,36 @@ export class StoreProcedureResult<T> {
       );
     }
     return data[0][0];
+  }
+}
+
+function convertMySQLStringToJSON(mysqlString: string) {
+  if (
+    mysqlString.includes("[") &&
+    mysqlString.includes("]") &&
+    mysqlString.includes("{") &&
+    mysqlString.includes("}")
+  ) {
+    mysqlString = mysqlString.slice(1, -1);
+
+    mysqlString = mysqlString.replace(/'/g, '"');
+
+    mysqlString = "[" + mysqlString + "]";
+
+    return mysqlString;
+  }
+  return mysqlString;
+}
+
+function checkMessageType(data: string): 0 | 1 {
+  try {
+    const parsedMessage = JSON.parse(data);
+    if (Array.isArray(parsedMessage)) {
+      return 1;
+    } else {
+      return 0;
+    }
+  } catch (error) {
+    return 0;
   }
 }

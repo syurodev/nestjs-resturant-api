@@ -22,15 +22,6 @@ let RestaurantBrandService = class RestaurantBrandService {
     constructor(restaurantBrandRepository) {
         this.restaurantBrandRepository = restaurantBrandRepository;
     }
-    async findWithRestaurantIdAndName(restaurantId, brandName) {
-        const brand = await this.restaurantBrandRepository.findOne({
-            where: {
-                restaurant_id: restaurantId,
-                name: brandName,
-            },
-        });
-        return brand;
-    }
     async findRestaurantBrandWithId(brandId, employeeId) {
         const brand = await this.restaurantBrandRepository.query(`
       CALL sp_g_restaurant_brand(?, ?, @c, @m);
@@ -52,8 +43,17 @@ let RestaurantBrandService = class RestaurantBrandService {
     `, [employeeId, JSON.stringify(restaurantBrands)]);
         return new utils_store_procedure_result_common_1.StoreProcedureResult().getResultList(createdRestaurantBrands);
     }
-    async update(restaurantBrand) {
-        return await this.restaurantBrandRepository.save(restaurantBrand);
+    async update(employeeId, restaurantBrandId, restaurantBrandUpdateDTO) {
+        let updatedRestaurantBrand = await this.restaurantBrandRepository.query(`
+        CALL sp_u_restaurant_brand_name(?, ?, ?, ?, @c, @m);
+        SELECT @c as status, @m as message;
+      `, [
+            employeeId,
+            restaurantBrandId,
+            restaurantBrandUpdateDTO.restaurant_id,
+            restaurantBrandUpdateDTO.name,
+        ]);
+        return new utils_store_procedure_result_common_1.StoreProcedureResult().getResultDetail(updatedRestaurantBrand);
     }
     async findAll(employeeId) {
         let restaurantBrands = await this.restaurantBrandRepository.query(`

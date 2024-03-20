@@ -31,15 +31,7 @@ let RestaurantBrandController = class RestaurantBrandController {
     }
     async create(restaurantBrandDTO, res, employee) {
         let response = new utils_response_common_1.ResponseData();
-        let existingRestaurantBrand = await this.restaurantBrandService.findWithRestaurantIdAndName(restaurantBrandDTO.restaurant_id, restaurantBrandDTO.name);
-        if (existingRestaurantBrand) {
-            throw new common_1.HttpException(new utils_exception_common_1.ExceptionResponseDetail(common_1.HttpStatus.BAD_REQUEST, `Tên thương hiệu [${restaurantBrandDTO.name}] này đã tồn tại!`), common_1.HttpStatus.OK);
-        }
         let savedRestaurantBrand = (await this.restaurantBrandService.create(employee.id, restaurantBrandDTO));
-        if (!savedRestaurantBrand) {
-            response.setMessage(400, "Tạo thương hiệu thất bại!");
-            return res.status(common_1.HttpStatus.OK).send(response);
-        }
         response.setData(new restaurant_brand_detail_response_1.RestaurantBrandDetailResponse(savedRestaurantBrand));
         return res.status(common_1.HttpStatus.OK).send(response);
     }
@@ -49,15 +41,9 @@ let RestaurantBrandController = class RestaurantBrandController {
         response.setData(new restaurant_brands_response_1.RestaurantBrandsResponse().mapToList(savedRestaurantBrand));
         return res.status(common_1.HttpStatus.OK).send(response);
     }
-    async updateBrand(restaurantBrandDTO, res, id, employee) {
+    async update(restaurantBrandDTO, res, id, employee) {
         let response = new utils_response_common_1.ResponseData();
-        let existingRestaurantBrand = await this.restaurantBrandService.findRestaurantBrandWithId(id, employee.id);
-        if (!existingRestaurantBrand) {
-            throw new common_1.HttpException(new utils_exception_common_1.ExceptionResponseDetail(common_1.HttpStatus.BAD_REQUEST, `Không tìm thấy thương hiệu!`), common_1.HttpStatus.OK);
-        }
-        existingRestaurantBrand.name = restaurantBrandDTO.name;
-        existingRestaurantBrand.updated_at = new Date();
-        let updatedRestaurantBrand = await this.restaurantBrandService.update(existingRestaurantBrand);
+        let updatedRestaurantBrand = await this.restaurantBrandService.update(employee.id, id, restaurantBrandDTO);
         if (!updatedRestaurantBrand) {
             throw new common_1.HttpException(new utils_exception_common_1.ExceptionResponseDetail(common_1.HttpStatus.BAD_REQUEST, `Cập nhật thương hiệu không thành công!`), common_1.HttpStatus.OK);
         }
@@ -160,7 +146,7 @@ __decorate([
     __metadata("design:type", Function),
     __metadata("design:paramtypes", [restaurant_brand_create_dto_1.RestaurantBrandDTO, Object, Number, employee_entity_1.Employee]),
     __metadata("design:returntype", Promise)
-], RestaurantBrandController.prototype, "updateBrand", null);
+], RestaurantBrandController.prototype, "update", null);
 __decorate([
     (0, common_1.Get)("/:id"),
     (0, common_1.UseGuards)(common_1.ValidationPipe),

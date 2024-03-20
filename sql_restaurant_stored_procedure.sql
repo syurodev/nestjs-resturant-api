@@ -100,10 +100,12 @@ CREATE DEFINER=`phamtuanvu`@`%` PROCEDURE `phamtuanvu`.`sp_u_restaurants_create`
 	OUT `message_error` TEXT CHARACTER SET utf8 COLLATE utf8_general_ci
 )
 store_procedure:BEGIN
-	DECLARE `jsonIdx` INT DEFAULT 0;
-    DECLARE `restaurantName` VARCHAR(255);
-    DECLARE `numRestaurants` INT DEFAULT JSON_LENGTH(`restaurantsData`);
-   	DECLARE `existingRestaurantName` TINYINT(1);
+	DECLARE `index` INT DEFAULT 0;
+    DECLARE `countNumber` INT DEFAULT 0;
+   	DECLARE `isExitRestaurant` TINYINT(1);
+   	DECLARE `restaurantName` VARCHAR(255);
+	DECLARE `restaurantExists` TINYINT(1);
+	DECLARE `restaurantExistsLength` TINYINT(1);
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
@@ -115,53 +117,75 @@ store_procedure:BEGIN
 	SET `status_code` = 0;
 	SET `message_error` = 'Success';
 
-	DROP TEMPORARY TABLE IF EXISTS tbl_created_restaurant_ids;
-	DROP TEMPORARY TABLE IF EXISTS tbl_created_restaurants;
-
-	CREATE TEMPORARY TABLE tbl_created_restaurant_ids(
-		id INT(11)
+	DROP TEMPORARY TABLE IF EXISTS tbl_restaurants;
+	CREATE TEMPORARY TABLE tbl_restaurants(
+		name VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci
 	);
 
-
-	CREATE TEMPORARY TABLE tbl_created_restaurants(
-		name TEXT CHARACTER SET utf8 COLLATE utf8_general_ci,
-		employee_id INT(11)
+	DROP TEMPORARY TABLE IF EXISTS tbl_exit_restaurants;
+	CREATE TEMPORARY TABLE tbl_exit_restaurants(
+		idx TINYINT(3),
+		message VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci
 	);
 
-	WHILE `jsonIdx` < `numRestaurants` DO
-		SET `restaurantName` = JSON_UNQUOTE(JSON_EXTRACT(`restaurantsData`, CONCAT('$[', `jsonIdx`, '].name')));
+	SET `countNumber` = JSON_LENGTH(`restaurantsData`, '$');
+	WHILE `index` < `countNumber` DO
 
-		SELECT 	COUNT(*)
-		INTO 	`existingRestaurantName`
-		FROM 	restaurants r
-		WHERE 	r.name = `restaurantName`;
+		SET `restaurantName` = JSON_UNQUOTE(JSON_EXTRACT(`restaurantsData`, CONCAT('$[', `index`, '].name')));
+	   	SET `restaurantExists` = 0;
 
-		IF `existingRestaurantName` > 0 THEN
-			SET `status_code` = 2;
-			SET `message_error` = CONCAT('Tên nhà hàng [', `restaurantName`, '] đã tồn tại');
-			LEAVE store_procedure;
-		ELSE
-			INSERT INTO tbl_created_restaurants (name, employee_id)
-			VALUES (`restaurantName`, `employeeId`);
-		END IF;
-	SET `jsonIdx` = `jsonIdx` + 1;
+	    SELECT COUNT(*) INTO `restaurantExists` FROM restaurants WHERE name = `restaurantName`;
+
+	   	IF `restaurantExists` > 0 THEN
+	        INSERT INTO tbl_exit_restaurants (idx, message)
+	        			SELECT `index`, "Tên nhà hàng đã tồn tại";
+	    ELSE
+	        INSERT INTO tbl_restaurants (name)
+					SELECT JSON_UNQUOTE(JSON_EXTRACT(`restaurantsData`, CONCAT('$[', `index`, '].name')));
+	    END IF;
+
+		SET `index` = `index` + 1;
 	END WHILE;
+
+	SELECT COUNT(*)
+	INTO `isExitRestaurant`
+	FROM tbl_exit_restaurants;
+
+	SET `isExitRestaurant` = (
+								CASE
+									WHEN `isExitRestaurant` > 0
+									THEN 1
+									ELSE (SELECT COUNT(*) FROM tbl_restaurants r GROUP BY r.name HAVING COUNT(*) > 1 LIMIT 1)
+								END
+							 );
+
+	IF `isExitRestaurant` > 0 THEN
+		SELECT COUNT(*) INTO `restaurantExistsLength` FROM tbl_exit_restaurants;
+
+		SET `status_code` = 1;
+
+		IF(`restaurantExistsLength` > 0) THEN
+			SELECT CONCAT('[', GROUP_CONCAT(CONCAT('{"index":', idx, ',"message":"', message, '"}')), ']')
+		    INTO `message_error`
+		    FROM tbl_exit_restaurants;
+		ELSE
+			SET `message_error` = "Các tên nhà hàng đã nhập bị trùng";
+		END IF;
+
+		LEAVE store_procedure;
+	END IF;
 
 	INSERT INTO restaurants (name, employee_id)
 	SELECT 		r.name,
-				r.employee_id
-	FROM 		tbl_created_restaurants r;
-
-	INSERT INTO tbl_created_restaurant_ids
-    SELECT id FROM restaurants WHERE name IN (SELECT name FROM tbl_created_restaurants);
-
+				`employeeId`
+	FROM 		tbl_restaurants r;
 
 	SELECT 	r.id,
             r.name,
             r.status,
             r.created_at
     FROM 	restaurants r
-    WHERE	r.id IN(SELECT id FROM tbl_created_restaurant_ids);
+    WHERE	r.name IN(SELECT name FROM tbl_restaurants);
 
-	DROP TEMPORARY TABLE IF EXISTS tbl_created_restaurant_ids;
+	DROP TEMPORARY TABLE IF EXISTS tbl_restaurants;
 END

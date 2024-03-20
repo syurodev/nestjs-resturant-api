@@ -11,12 +11,13 @@ var __metadata = (this && this.__metadata) || function (k, v) {
 Object.defineProperty(exports, "__esModule", { value: true });
 exports.TableDetailResponse = void 0;
 const swagger_1 = require("@nestjs/swagger");
-const tables_entity_1 = require("../tables.entity/tables.entity");
 class TableDetailResponse {
     constructor(table) {
-        this.table = table;
+        this.id = table.id;
+        this.name = table.name;
+        this.status = table.status;
+        this.created_at = table.created_at;
     }
-    ;
 }
 __decorate([
     (0, swagger_1.ApiProperty)({
@@ -24,7 +25,7 @@ __decorate([
         example: "",
         description: "thông tin của bàn",
     }),
-    __metadata("design:type", tables_entity_1.Tables)
-], TableDetailResponse.prototype, "table", void 0);
+    __metadata("design:type", Number)
+], TableDetailResponse.prototype, "id", void 0);
 exports.TableDetailResponse = TableDetailResponse;
 //# sourceMappingURL=table-detail.response.js.map

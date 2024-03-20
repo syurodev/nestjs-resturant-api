@@ -103,8 +103,10 @@ CREATE DEFINER=`phamtuanvu`@`%` PROCEDURE `phamtuanvu`.`sp_u_restaurant_brands_c
 store_procedure:BEGIN
 	DECLARE `index` INT(3) DEFAULT 0;
     DECLARE `countNumber` INT(3) DEFAULT 0;
-    DECLARE `isExitRestaurantBrandName` TINYINT(1);
    	DECLARE `isExitRestaurantBrand` TINYINT(1) DEFAULT 0;
+   	DECLARE `brandName` VARCHAR(255);
+	DECLARE `brandExists` TINYINT(1) DEFAULT 0;
+	DECLARE `restaurantBrandExistsLength` TINYINT(1) DEFAULT 0;
 
 	DECLARE EXIT HANDLER FOR SQLEXCEPTION
 	BEGIN
@@ -125,36 +127,35 @@ store_procedure:BEGIN
 
 	DROP TEMPORARY TABLE IF EXISTS tbl_exit_restaurant_brands;
 	CREATE TEMPORARY TABLE tbl_exit_restaurant_brands(
-		id INT(11),
-		name VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci,
-		restaurant_id INT(11)
+		idx TINYINT(3),
+		message VARCHAR(255) CHARACTER SET utf8 COLLATE utf8_general_ci
 	);
+
 	SET `countNumber` = JSON_LENGTH(`restaurantBrandsData`,'$');
 	WHILE `index` < `countNumber` DO
-		INSERT INTO tbl_restaurant_brands (
-											name,
-											employee_id,
-											restaurant_id
-										  )
-								   VALUES (
-								   			JSON_UNQUOTE(JSON_EXTRACT(`restaurantBrandsData`, CONCAT('$[', `index`, '].name'))),
-								   			`employeeId`,
-								   			JSON_UNQUOTE(JSON_EXTRACT(`restaurantBrandsData`, CONCAT('$[', `index`, '].restaurant_id')))
-								   		  );
-		SET `index` = `index` + 1;
-	END WHILE;
 
-	INSERT INTO tbl_exit_restaurant_brands (id, name, restaurant_id)
-	SELECT 	rb.id,
-			rb.name,
-			rb.restaurant_id
-	FROM 	restaurant_brands rb
-	WHERE 	rb.name IN 				(
-										SELECT name FROM tbl_restaurant_brands
-								    )
-			AND rb.restaurant_id IN (
-										SELECT restaurant_id FROM tbl_restaurant_brands
-									);
+	    SET `brandName` = JSON_UNQUOTE(JSON_EXTRACT(`restaurantBrandsData`, CONCAT('$[', `index`, '].name')));
+
+	    SELECT COUNT(*) INTO `brandExists` FROM restaurant_brands WHERE name = brandName;
+
+	    IF `brandExists` > 0 THEN
+	        INSERT INTO tbl_exit_restaurant_brands (idx, message)
+	        VALUES (`index`, "Tên thương hiệu đã tồn tại");
+	    ELSE
+	        INSERT INTO tbl_restaurant_brands (
+	            name,
+	            employee_id,
+	            restaurant_id
+	        )
+	        VALUES (
+	            `brandName`,
+	            `employeeId`,
+	            JSON_UNQUOTE(JSON_EXTRACT(`restaurantBrandsData`, CONCAT('$[', `index`, '].restaurant_id')))
+	        );
+	    END IF;
+
+	    SET `index` = `index` + 1;
+	END WHILE;
 
 	SELECT 	COUNT(*)
 	INTO 	`isExitRestaurantBrand`
@@ -175,16 +176,25 @@ store_procedure:BEGIN
 								  );
 
 	IF `isExitRestaurantBrand` > 0 THEN
+		SELECT COUNT(*) INTO `restaurantBrandExistsLength` FROM tbl_exit_restaurant_brands;
+
 		SET `status_code` = 2;
-		SET `message_error` = 'Tên chi nhánh đã tồn tại';
+
+		IF `restaurantBrandExistsLength` > 0 THEN
+			SELECT CONCAT('[', GROUP_CONCAT(CONCAT('{"index":', idx, ',"message":"', message, '"}')), ']')
+		    INTO `message_error`
+		    FROM tbl_exit_restaurant_brands;
+		ELSE
+			SET `message_error` = "Tên thương hiệu đã nhập bị trùng";
+		END IF;
 		LEAVE store_procedure;
 	END IF;
 
 	INSERT INTO restaurant_brands (name, employee_id, restaurant_id)
-	SELECT 		rb.name,
-				rb.employee_id,
-				rb.restaurant_id
-	FROM 		tbl_restaurant_brands rb;
+				SELECT 			   rb.name,
+								   rb.employee_id,
+								   rb.restaurant_id
+				FROM 			   tbl_restaurant_brands rb;
 
 	SELECT 	rb.id,
             rb.name,

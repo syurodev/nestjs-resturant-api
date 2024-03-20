@@ -33,7 +33,6 @@ let RestaurantController = class RestaurantController {
         let createdRestaurant = (await this.restaurantService.create(employee.id, restaurantDTO));
         if (!createdRestaurant) {
             response.setMessage(common_1.HttpStatus.BAD_REQUEST, "Tạo nhà hàng không thành công");
-            return res.status(common_1.HttpStatus.OK).send(response);
         }
         response.setData(createdRestaurant);
         return res.status(common_1.HttpStatus.OK).send(response);

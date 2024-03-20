@@ -65,32 +65,11 @@ export class RestaurantBrandController {
   ) {
     let response: ResponseData = new ResponseData();
 
-    let existingRestaurantBrand: RestaurantBrand =
-      await this.restaurantBrandService.findWithRestaurantIdAndName(
-        restaurantBrandDTO.restaurant_id,
-        restaurantBrandDTO.name
-      );
-
-    if (existingRestaurantBrand) {
-      throw new HttpException(
-        new ExceptionResponseDetail(
-          HttpStatus.BAD_REQUEST,
-          `Tên thương hiệu [${restaurantBrandDTO.name}] này đã tồn tại!`
-        ),
-        HttpStatus.OK
-      );
-    }
-
     let savedRestaurantBrand: RestaurantBrand =
       (await this.restaurantBrandService.create(
         employee.id,
         restaurantBrandDTO
       )) as RestaurantBrand;
-
-    if (!savedRestaurantBrand) {
-      response.setMessage(400, "Tạo thương hiệu thất bại!");
-      return res.status(HttpStatus.OK).send(response);
-    }
 
     response.setData(new RestaurantBrandDetailResponse(savedRestaurantBrand));
     return res.status(HttpStatus.OK).send(response);
@@ -153,7 +132,7 @@ export class RestaurantBrandController {
     },
   })
   @ApiOperation({ summary: "Chỉnh sửa thương hiệu" })
-  async updateBrand(
+  async update(
     @Body(new ValidationPipe()) restaurantBrandDTO: RestaurantBrandDTO,
     @Res() res: Response,
     @Param("id") id: number,
@@ -161,27 +140,12 @@ export class RestaurantBrandController {
   ) {
     let response: ResponseData = new ResponseData();
 
-    let existingRestaurantBrand: RestaurantBrand =
-      await this.restaurantBrandService.findRestaurantBrandWithId(
-        id,
-        employee.id
-      );
-
-    if (!existingRestaurantBrand) {
-      throw new HttpException(
-        new ExceptionResponseDetail(
-          HttpStatus.BAD_REQUEST,
-          `Không tìm thấy thương hiệu!`
-        ),
-        HttpStatus.OK
-      );
-    }
-
-    existingRestaurantBrand.name = restaurantBrandDTO.name;
-    existingRestaurantBrand.updated_at = new Date();
-
     let updatedRestaurantBrand: RestaurantBrand =
-      await this.restaurantBrandService.update(existingRestaurantBrand);
+      await this.restaurantBrandService.update(
+        employee.id,
+        id,
+        restaurantBrandDTO
+      );
 
     if (!updatedRestaurantBrand) {
       throw new HttpException(
