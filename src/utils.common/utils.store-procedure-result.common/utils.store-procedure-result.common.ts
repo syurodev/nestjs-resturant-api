@@ -53,7 +53,11 @@ export class StoreProcedureResult<T> {
         );
       }
     }
-    return data[0];
+    if (data[0][0] && data[0][0]?.data) {
+      return JSON.parse(data[0][0].data);
+    } else {
+      return data[0];
+    }
   }
 
   public getResultDetail(data: any) {

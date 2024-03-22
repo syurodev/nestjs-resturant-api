@@ -20,6 +20,7 @@ class StoreProcedureResult {
         };
     }
     getResultList(data) {
+        var _a;
         console.log(data);
         if (data.length < 3 &&
             (parseInt(data[1][0].status) === utils_store_procedure_status_enum_common_1.StoreProcedureStatusEnum.ERROR ||
@@ -32,7 +33,12 @@ class StoreProcedureResult {
                 throw new common_1.HttpException(new utils_exception_common_1.ExceptionResponseDetail(common_1.HttpStatus.BAD_REQUEST, JSON.parse(jsonString)), common_1.HttpStatus.OK);
             }
         }
-        return data[0];
+        if (data[0][0] && ((_a = data[0][0]) === null || _a === void 0 ? void 0 : _a.data)) {
+            return JSON.parse(data[0][0].data);
+        }
+        else {
+            return data[0];
+        }
     }
     getResultDetail(data) {
         if (data.length < 3 &&

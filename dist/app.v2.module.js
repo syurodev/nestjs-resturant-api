@@ -16,6 +16,7 @@ const restaurant_brand_module_1 = require("./v2/restaurant-brand/restaurant-bran
 const branches_module_1 = require("./v2/branches/branches.module");
 const areas_module_1 = require("./v2/areas/areas.module");
 const tables_module_1 = require("./v2/tables/tables.module");
+const extend_module_1 = require("./v2/extend/extend.module");
 let AppV2Module = class AppV2Module {
 };
 AppV2Module = __decorate([
@@ -32,6 +33,7 @@ AppV2Module = __decorate([
             branches_module_1.BranchesModule,
             areas_module_1.AreasModule,
             tables_module_1.TablesModule,
+            extend_module_1.ExtendModule,
         ],
         controllers: [],
         providers: [],

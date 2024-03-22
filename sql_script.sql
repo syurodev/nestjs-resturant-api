@@ -77,3 +77,23 @@ CREATE TABLE
     `updated_at` timestamp NULL DEFAULT NULL,
     PRIMARY KEY (`id`) USING BTREE
   ) ENGINE = InnoDB AUTO_INCREMENT = 1 DEFAULT CHARSET = utf8mb4 COLLATE = utf8mb4_general_ci;
+
+
+  CREATE PROCEDURE phamtuanvu.sp_g_restaurant_detail()
+  BEGIN
+	SELECT 		r.id,
+				r.name,
+				rb.id as restaurant_brand,
+				rb.name as restaurant_brand_name,
+				b.id as branche_id,
+				b.name as branche_name,
+				a.id as area_id,
+				a.name as area_name,
+				tb.id as table_id,
+				tb.name as table_name
+	FROM 		restaurants r
+	LEFT JOIN 	restaurant_brands rb ON rb.restaurant_id = r.id
+	LEFT JOIN 	branches b ON b.restaurant_id = r.id AND b.restaurant_brand_id = rb.id
+	LEFT JOIN	areas a ON a.restaurant_id = r.id AND a.restaurant_brand_id = rb.id AND a.branch_id = b.id
+	LEFT JOIN	tables tb ON tb.restaurant_id = r.id AND tb.restaurant_brand_id = rb.id AND tb.area_id = a.id;
+  END
