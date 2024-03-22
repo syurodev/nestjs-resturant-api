@@ -28,7 +28,6 @@ export class StoreProcedureResult<T> {
   }
 
   public getResultList(data: any) {
-    console.log(data);
     if (
       data.length < 3 &&
       (parseInt(data[1][0].status) === StoreProcedureStatusEnum.ERROR ||
